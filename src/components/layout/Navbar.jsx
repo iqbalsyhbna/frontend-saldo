@@ -11,7 +11,7 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto flex justify-between items-center px-6 py-4">
-        <h1 className="text-xl font-bold text-blue-600">PosSaldo</h1>
+        <h1 className="text-xl font-bold text-blue-600">PoSaldo</h1>
         <div className="flex gap-6">
           {menu.map((item) => (
             <Link
