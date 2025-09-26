@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { exportPDF, getAllSaldo, updateSaldo } from "../api/saldoApi";
+import { deleteSaldo, exportPDF, getAllSaldo, updateSaldo } from "../api/saldoApi";
 import SaldoTable from "../components/saldo/SaldoTable";
 import SaldoForm from "../components/saldo/SaldoForm";
 
@@ -65,6 +65,20 @@ export default function SaldoList() {
     } catch (err) {
       console.error(err);
       alert("❌ Gagal update data");
+    }
+  };
+
+  const handleDelete = async (item) => {
+    if (!window.confirm(`Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`)) {
+      return;
+    }
+    try {
+      await deleteSaldo(item.id);
+      alert("🗑️ Data berhasil dihapus!");
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Gagal menghapus data");
     }
   };
 
@@ -134,7 +148,7 @@ export default function SaldoList() {
       </div>
 
       {/* Table */}
-      <SaldoTable data={filtered} onEdit={handleEdit} />
+      <SaldoTable data={filtered} onEdit={handleEdit} onDelete={handleDelete} />
 
       {editing && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20 z-50">

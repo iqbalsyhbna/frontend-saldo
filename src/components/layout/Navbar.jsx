@@ -9,8 +9,8 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container mx-auto flex justify-between items-center px-6 py-4">
+    <nav className="fixed top-0 left-0 w-full h-16 bg-white shadow-md z-50">
+      <div className="container mx-auto flex justify-between items-center px-6 h-full">
         <h1 className="text-xl font-bold text-blue-600">PoSaldo</h1>
         <div className="flex gap-6">
           {menu.map((item) => (
@@ -18,7 +18,9 @@ export default function Navbar() {
               key={item.path}
               to={item.path}
               className={`text-gray-700 hover:text-blue-600 transition ${
-                location.pathname === item.path ? "font-semibold text-blue-600" : ""
+                location.pathname === item.path
+                  ? "font-semibold text-blue-600"
+                  : ""
               }`}
             >
               {item.label}
