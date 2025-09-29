@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createSaldo } from "../../api/saldoApi";
+import { createSaldo, getSaldoById } from "../../api/saldoApi";
 
 export default function SaldoForm({ initialData, onSubmit, onCancel }) {
   const [form, setForm] = useState({
@@ -9,11 +9,25 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     saldo_rkud: "",
     penerimaan_sipd: "",
     pengeluaran_sipd: "",
+    keterangan: "",
   });
+
+  const getKeterangan = async (id) => {
+    const res = await getSaldoById(id);
+    return res.keterangan || ""; // pastikan return string
+  };
 
   useEffect(() => {
     if (initialData) {
-      setForm(initialData);
+      const fetchKeterangan = async () => {
+        const keterangan = await getKeterangan(initialData.id);
+        setForm({
+          ...initialData,
+          keterangan, // ambil dari DB, kalau kosong → ""
+        });
+      };
+
+      fetchKeterangan();
     }
   }, [initialData]);
 
@@ -22,11 +36,18 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Konversi keterangan kosong menjadi null
+    const formData = {
+      ...form,
+      keterangan: form.keterangan.trim() === "" ? null : form.keterangan.trim()
+    };
+
     if (onSubmit) {
-      onSubmit(form); // untuk edit
+      onSubmit(formData); // untuk edit
     } else {
       try {
-        await createSaldo(form);
+        await createSaldo(formData);
         alert("✅ Data berhasil disimpan!");
         setForm({
           tanggal: "",
@@ -35,6 +56,7 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
           saldo_rkud: "",
           penerimaan_sipd: "",
           pengeluaran_sipd: "",
+          keterangan: "",
         });
       } catch (err) {
         console.error(err);
@@ -43,30 +65,48 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     }
   };
 
+  // Definisi field dengan required yang spesifik
+  const fields = [
+    { name: "tanggal", label: "Tanggal", type: "date", required: true },
+    { name: "penerimaan_rkud", label: "Penerimaan RKUD", type: "number", required: false },
+    { name: "pengeluaran_rkud", label: "Pengeluaran RKUD", type: "number", required: false },
+    { name: "saldo_rkud", label: "Saldo RKUD", type: "number", required: false },
+    { name: "penerimaan_sipd", label: "Penerimaan SIPD", type: "number", required: false },
+    { name: "pengeluaran_sipd", label: "Pengeluaran SIPD", type: "number", required: false },
+    { name: "keterangan", label: "Keterangan", type: "text", required: false }, // TIDAK REQUIRED
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {[
-        { name: "tanggal", label: "Tanggal", type: "date" },
-        { name: "penerimaan_rkud", label: "Penerimaan RKUD", type: "number" },
-        { name: "pengeluaran_rkud", label: "Pengeluaran RKUD", type: "number" },
-        { name: "saldo_rkud", label: "Saldo RKUD", type: "number" },
-        { name: "penerimaan_sipd", label: "Penerimaan SIPD", type: "number" },
-        { name: "pengeluaran_sipd", label: "Pengeluaran SIPD", type: "number" },
-      ].map((field) => (
+      {fields.map((field) => (
         <div key={field.name}>
           <label className="block text-gray-700 font-medium mb-1">
             {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <input
             type={field.type}
             name={field.name}
             value={form[field.name]}
             onChange={handleChange}
-            required={field.type !== "number"}
+            required={field.required} // Gunakan property required dari field
+            placeholder={field.name === "keterangan" ? "Opsional - bisa dikosongkan" : ""}
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
           />
         </div>
       ))}
+      
+      {/* Tombol untuk clear keterangan */}
+      <div className="flex items-center gap-2 text-sm">
+        <button
+          type="button"
+          onClick={() => setForm({ ...form, keterangan: "" })}
+          className="text-red-500 hover:text-red-700 underline"
+        >
+          Kosongkan Keterangan
+        </button>
+      </div>
+
       <div className="flex gap-2">
         <button
           type="submit"
