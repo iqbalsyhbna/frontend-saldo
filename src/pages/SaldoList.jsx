@@ -1,7 +1,19 @@
 import { useEffect, useState } from "react";
-import { deleteSaldo, exportPDF, getAllSaldo, updateSaldo } from "../api/saldoApi";
+import {
+  deleteSaldo,
+  exportPDF,
+  getAllSaldo,
+  updateSaldo,
+} from "../api/saldoApi";
 import SaldoTable from "../components/saldo/SaldoTable";
 import SaldoForm from "../components/saldo/SaldoForm";
+
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`; // format YYYY-MM-DD
+};
 
 export default function SaldoList() {
   const [data, setData] = useState([]);
@@ -20,7 +32,24 @@ export default function SaldoList() {
     try {
       const res = await getAllSaldo();
       setData(res);
-      setFiltered(res); // default tampil semua
+
+      // === Set default filter bulan sekarang ===
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const start = formatDate(startOfMonth);
+      const end = formatDate(endOfMonth);
+
+      setFilter({ startDate: start, endDate: end });
+
+      const result = res.filter(
+        (item) =>
+          new Date(item.tanggal) >= new Date(start) &&
+          new Date(item.tanggal) <= new Date(end)
+      );
+
+      setFiltered(result);
     } catch (err) {
       console.error(err);
     }
@@ -69,7 +98,11 @@ export default function SaldoList() {
   };
 
   const handleDelete = async (item) => {
-    if (!window.confirm(`Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`)) {
+    if (
+      !window.confirm(
+        `Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`
+      )
+    ) {
       return;
     }
     try {

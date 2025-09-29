@@ -38,7 +38,7 @@ export default function SaldoTable({ data, onEdit,onDelete  }) {
               key={item.id}
               className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition"
             >
-              <td className="px-4 py-2">{formatDate(item.tanggal)}</td>
+              <td className="px-4 py-2 whitespace-nowrap">{formatDate(item.tanggal)}</td>
               <td className="px-4 py-2">
                 {formatCurrency(item.penerimaan_rkud)}
               </td>
@@ -57,7 +57,7 @@ export default function SaldoTable({ data, onEdit,onDelete  }) {
               <td className="px-4 py-2 text-blue-600">
                 {formatCurrency(item.selisih_penerimaan)}
               </td>
-              <td className="px-4 py-2 text-red-600">
+              <td className="px-4 py-2 text-red-600 whitespace-nowrap">
                 {formatCurrency(item.selisih_pengeluaran)}
               </td>
               <td className="px-4 py-2">{item.keterangan || "-"}</td>
