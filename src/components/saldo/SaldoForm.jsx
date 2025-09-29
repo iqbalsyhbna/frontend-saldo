@@ -101,7 +101,7 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
         <button
           type="button"
           onClick={() => setForm({ ...form, keterangan: "" })}
-          className="text-red-500 hover:text-red-700 underline"
+          className="text-red-500 hover:text-red-700 underline cursor-pointer"
         >
           Kosongkan Keterangan
         </button>
@@ -110,7 +110,7 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer"
         >
           {initialData ? "Update" : "Simpan"}
         </button>
@@ -118,7 +118,7 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
+            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition cursor-pointer"
           >
             Batal
           </button>

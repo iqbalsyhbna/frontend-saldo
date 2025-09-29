@@ -17,7 +17,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full h-16 bg-white shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 h-full">
         {/* Logo */}
-        <h1 className="text-xl font-bold text-blue-600">PoSaldo</h1>
+        <Link to="/" className="text-xl font-bold text-blue-600 cursor-pointer">PoSaldo</Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-6">

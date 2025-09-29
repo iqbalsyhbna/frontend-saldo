@@ -157,14 +157,14 @@ export default function SaldoList() {
           <button
             onClick={applyFilter}
             type="button"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer"
           >
             Terapkan
           </button>
           <button
             onClick={resetFilter}
             type="button"
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition cursor-pointer"
           >
             Reset
           </button>
@@ -173,7 +173,7 @@ export default function SaldoList() {
           <button
             onClick={handleExportPdf}
             type="button"
-            className="bg-yellow-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+            className="bg-yellow-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition cursor-pointer"
           >
             Export PDF
           </button>
