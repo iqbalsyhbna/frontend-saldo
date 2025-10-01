@@ -1,26 +1,71 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
+  // Base menu
   const menu = [
     { path: "/", label: "Dashboard" },
     { path: "/saldo", label: "Data Saldo" },
-    { path: "/saldo/input", label: "Input Saldo" },
   ];
 
+  // Tambahkan menu khusus admin
+  if (user?.role === "admin") {
+    menu.push({ path: "/saldo/input", label: "Input Saldo" });
+    menu.push({ path: "/admin", label: "Admin" });
+  }
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate("/");
+  };
+
+  // Komponen tombol login/logout
+  const AuthButton = ({ mobile = false }) => {
+    if (!user) {
+      return (
+        <Link
+          to="/login"
+          onClick={() => setIsMenuOpen(false)}
+          className={`${
+            mobile ? "block w-full text-center" : "ml-4"
+          } bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700`}
+        >
+          Login
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleLogout}
+        className={`${
+          mobile ? "block w-full" : "ml-4"
+        } bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700`}
+      >
+        Logout
+      </button>
+    );
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full h-16 bg-white shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 h-full">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-blue-600 cursor-pointer">PoSaldo</Link>
+        <Link to="/" className="text-xl font-bold text-blue-600 cursor-pointer">
+          PoSaldo
+        </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex gap-6">
+        <div className="hidden md:flex gap-6 items-center">
           {menu.map((item) => (
             <Link
               key={item.path}
@@ -34,6 +79,9 @@ export default function Navbar() {
               {item.label}
             </Link>
           ))}
+
+          {/* Auth Button Desktop */}
+          <AuthButton />
         </div>
 
         {/* Mobile Menu Button */}
@@ -73,7 +121,7 @@ export default function Navbar() {
             <Link
               key={item.path}
               to={item.path}
-              onClick={() => setIsMenuOpen(false)} // Close menu after click
+              onClick={() => setIsMenuOpen(false)}
               className={`block py-3 px-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200 ${
                 location.pathname === item.path
                   ? "font-semibold text-blue-600 bg-blue-50"
@@ -83,6 +131,9 @@ export default function Navbar() {
               {item.label}
             </Link>
           ))}
+
+          {/* Auth Button Mobile */}
+          <AuthButton mobile />
         </div>
       </div>
     </nav>

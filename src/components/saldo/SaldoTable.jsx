@@ -1,7 +1,10 @@
+import { useAuth } from "../../hooks/useAuth";
 import { formatDate, formatCurrency } from "../../utils/format";
 import { Pencil, Trash2 } from "lucide-react";
 
-export default function SaldoTable({ data, onEdit,onDelete  }) {
+export default function SaldoTable({ data, onEdit, onDelete }) {
+  const { user } = useAuth();
+
   if (!data || data.length === 0) {
     return <p className="text-gray-500">Belum ada data saldo.</p>;
   }
@@ -21,7 +24,7 @@ export default function SaldoTable({ data, onEdit,onDelete  }) {
               "Selisih Penerimaan",
               "Selisih Pengeluaran",
               "Keterangan",
-              "Aksi",
+              ...(user?.role === "admin" ? ["Aksi"] : []),
             ].map((head) => (
               <th
                 key={head}
@@ -38,7 +41,9 @@ export default function SaldoTable({ data, onEdit,onDelete  }) {
               key={item.id}
               className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition"
             >
-              <td className="px-4 py-2 whitespace-nowrap">{formatDate(item.tanggal)}</td>
+              <td className="px-4 py-2 whitespace-nowrap">
+                {formatDate(item.tanggal)}
+              </td>
               <td className="px-4 py-2">
                 {formatCurrency(item.penerimaan_rkud)}
               </td>
@@ -61,25 +66,27 @@ export default function SaldoTable({ data, onEdit,onDelete  }) {
                 {formatCurrency(item.selisih_pengeluaran)}
               </td>
               <td className="px-4 py-2">{item.keterangan || "-"}</td>
-              <td className="px-4 py-2 flex gap-2">
-                {/* Tombol Edit */}
-                <button
-                  onClick={() => onEdit(item)}
-                  className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
-                  title="Edit"
-                >
-                  <Pencil size={16} />
-                </button>
+              {user?.role === "admin" && (
+                <td className="px-4 py-2 flex gap-2">
+                  {/* Tombol Edit */}
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
+                    title="Edit"
+                  >
+                    <Pencil size={16} />
+                  </button>
 
-                {/* Tombol Delete */}
-                <button
-                  onClick={() => onDelete(item)}
-                  className="p-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
-                  title="Delete"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </td>
+                  {/* Tombol Delete */}
+                  <button
+                    onClick={() => onDelete(item)}
+                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
