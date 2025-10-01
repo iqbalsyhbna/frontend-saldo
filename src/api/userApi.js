@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/users`;
+console.log("API_URL:", API_URL); // Debugging line to check the value of API_URL
 
 export const getAllUsers = async () => {
   const res = await axios.get(API_URL);
