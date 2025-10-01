@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL + "/api/saldo";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/saldo`;
 
 export const getAllSaldo = async (params = {}) => {
   const res = await axios.get(API_URL, { params });
