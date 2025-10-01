@@ -55,10 +55,17 @@ export default function UserPage() {
 
   const handleDelete = async (id) => {
     try {
+      const confirmDelete = window.confirm(
+        "Apakah Anda yakin ingin menghapus user ini?"
+      );
+      if (!confirmDelete) return;
+
       await deleteUser(id);
       fetchUsers();
+      alert("User berhasil dihapus!");
     } catch (error) {
       console.error("Error deleting user:", error);
+      alert("Gagal menghapus user!");
     }
   };
 
