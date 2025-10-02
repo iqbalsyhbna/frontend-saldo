@@ -37,7 +37,7 @@ export default function Navbar() {
           onClick={() => setIsMenuOpen(false)}
           className={`${
             mobile ? "block w-full text-center" : "ml-4"
-          } bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700`}
+          } border border-blue-600 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-600 hover:text-white transition-colors cursor-pointer`}
         >
           Login
         </Link>
@@ -48,8 +48,8 @@ export default function Navbar() {
       <button
         onClick={handleLogout}
         className={`${
-          mobile ? "block w-full" : "ml-4"
-        } bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700`}
+          mobile ? "block w-full text-center" : "ml-4"
+        } border border-red-600 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-600 hover:text-white transition-colors cursor-pointer`}
       >
         Logout
       </button>
