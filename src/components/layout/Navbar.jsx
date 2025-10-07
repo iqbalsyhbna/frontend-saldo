@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import logo from "../../assets/icon_horizontal.png";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -60,8 +61,12 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full h-16 bg-white shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 h-full">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-blue-600 cursor-pointer">
-          PoSaldo
+        <Link to="/" className="flex items-center">
+          <img
+            src={logo}
+            alt="Logo"
+            className="w-28 sm:w-36 md:w-44 lg:w-48 xl:w-52 h-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Menu */}
