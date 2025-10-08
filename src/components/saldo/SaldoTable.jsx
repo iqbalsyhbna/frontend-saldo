@@ -59,7 +59,7 @@ export default function SaldoTable({ data, onEdit, onDelete }) {
               <td className="px-4 py-2">
                 {formatCurrency(item.pengeluaran_sipd)}
               </td>
-              <td className="px-4 py-2 text-blue-600">
+              <td className="px-4 py-2 text-blue-600 whitespace-nowrap">
                 {formatCurrency(item.selisih_penerimaan)}
               </td>
               <td className="px-4 py-2 text-red-600 whitespace-nowrap">
