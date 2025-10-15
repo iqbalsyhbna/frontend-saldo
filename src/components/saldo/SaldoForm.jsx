@@ -36,11 +36,20 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Konversi keterangan kosong menjadi null
+
+    // Bersihkan dan konversi nilai sebelum dikirim
     const formData = {
       ...form,
-      keterangan: form.keterangan.trim() === "" ? null : form.keterangan.trim()
+      penerimaan_rkud:
+        form.penerimaan_rkud === "" ? 0 : parseFloat(form.penerimaan_rkud),
+      pengeluaran_rkud:
+        form.pengeluaran_rkud === "" ? 0 : parseFloat(form.pengeluaran_rkud),
+      saldo_rkud: form.saldo_rkud === "" ? 0 : parseFloat(form.saldo_rkud),
+      penerimaan_sipd:
+        form.penerimaan_sipd === "" ? 0 : parseFloat(form.penerimaan_sipd),
+      pengeluaran_sipd:
+        form.pengeluaran_sipd === "" ? 0 : parseFloat(form.pengeluaran_sipd),
+      keterangan: form.keterangan.trim() === "" ? null : form.keterangan.trim(),
     };
 
     if (onSubmit) {
@@ -68,11 +77,36 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
   // Definisi field dengan required yang spesifik
   const fields = [
     { name: "tanggal", label: "Tanggal", type: "date", required: true },
-    { name: "penerimaan_rkud", label: "Penerimaan RKUD", type: "number", required: false },
-    { name: "pengeluaran_rkud", label: "Pengeluaran RKUD", type: "number", required: false },
-    { name: "saldo_rkud", label: "Saldo RKUD", type: "number", required: false },
-    { name: "penerimaan_sipd", label: "Penerimaan SIPD", type: "number", required: false },
-    { name: "pengeluaran_sipd", label: "Pengeluaran SIPD", type: "number", required: false },
+    {
+      name: "penerimaan_rkud",
+      label: "Penerimaan RKUD",
+      type: "number",
+      required: false,
+    },
+    {
+      name: "pengeluaran_rkud",
+      label: "Pengeluaran RKUD",
+      type: "number",
+      required: false,
+    },
+    {
+      name: "saldo_rkud",
+      label: "Saldo RKUD",
+      type: "number",
+      required: false,
+    },
+    {
+      name: "penerimaan_sipd",
+      label: "Penerimaan SIPD",
+      type: "number",
+      required: false,
+    },
+    {
+      name: "pengeluaran_sipd",
+      label: "Pengeluaran SIPD",
+      type: "number",
+      required: false,
+    },
     { name: "keterangan", label: "Keterangan", type: "text", required: false }, // TIDAK REQUIRED
   ];
 
@@ -90,12 +124,14 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
             value={form[field.name]}
             onChange={handleChange}
             required={field.required} // Gunakan property required dari field
-            placeholder={field.name === "keterangan" ? "Opsional - bisa dikosongkan" : ""}
+            placeholder={
+              field.name === "keterangan" ? "Opsional - bisa dikosongkan" : ""
+            }
             className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
           />
         </div>
       ))}
-      
+
       {/* Tombol untuk clear keterangan */}
       <div className="flex items-center gap-2 text-sm">
         <button
