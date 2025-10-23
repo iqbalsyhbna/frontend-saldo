@@ -2,86 +2,119 @@ import { useAuth } from "../../hooks/useAuth";
 import { formatDate, formatCurrency } from "../../utils/format";
 import { Pencil, Trash2 } from "lucide-react";
 
-export default function SaldoTable({ data, onEdit, onDelete }) {
+export default function SaldoTable({ data, typeFilter = "all", onEdit, onDelete }) {
   const { user } = useAuth();
 
   if (!data || data.length === 0) {
-    return <p className="text-gray-500">Belum ada data saldo.</p>;
+    return (
+      <div className="text-center py-8 text-gray-500 border rounded-lg bg-gray-50">
+        Tidak ada data saldo untuk periode ini.
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-        <thead className="bg-gray-100">
+    <div className="overflow-x-auto max-h-[600px] border rounded-lg shadow-sm relative">
+      <table className="min-w-full text-sm border-collapse">
+        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
           <tr>
-            {[
-              "Tanggal",
-              "Penerimaan RKUD",
-              "Pengeluaran RKUD",
-              "Saldo RKUD",
-              "Penerimaan SIPD",
-              "Pengeluaran SIPD",
-              "Selisih Penerimaan",
-              "Selisih Pengeluaran",
-              "Keterangan",
-              ...(user?.role === "admin" ? ["Aksi"] : []),
-            ].map((head) => (
-              <th
-                key={head}
-                className="px-4 py-2 text-left text-sm font-semibold text-gray-700"
-              >
-                {head}
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">
+              Tanggal
+            </th>
+
+            {/* Penerimaan */}
+            {typeFilter !== "pengeluaran" && (
+              <>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Penerimaan RKUD
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Penerimaan SIPD
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-blue-700">
+                  Selisih Penerimaan
+                </th>
+              </>
+            )}
+
+            {/* Pengeluaran */}
+            {typeFilter !== "penerimaan" && (
+              <>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Pengeluaran RKUD
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Pengeluaran SIPD
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-red-700">
+                  Selisih Pengeluaran
+                </th>
+              </>
+            )}
+
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">
+              Saldo RKUD
+            </th>
+            <th className="px-4 py-3 text-left font-semibold text-gray-700">
+              Keterangan
+            </th>
+
+            {user?.role === "admin" && (
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                Aksi
               </th>
-            ))}
+            )}
           </tr>
         </thead>
+
         <tbody>
           {data.map((item) => (
             <tr
               key={item.id}
-              className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition"
+              className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors"
             >
               <td className="px-4 py-2 whitespace-nowrap">
                 {formatDate(item.tanggal)}
               </td>
-              <td className="px-4 py-2">
-                {formatCurrency(item.penerimaan_rkud)}
-              </td>
-              <td className="px-4 py-2">
-                {formatCurrency(item.pengeluaran_rkud)}
-              </td>
+
+              {typeFilter !== "pengeluaran" && (
+                <>
+                  <td className="px-4 py-2">{formatCurrency(item.penerimaan_rkud)}</td>
+                  <td className="px-4 py-2">{formatCurrency(item.penerimaan_sipd)}</td>
+                  <td className="px-4 py-2 text-blue-600 font-medium">
+                    {formatCurrency(item.selisih_penerimaan)}
+                  </td>
+                </>
+              )}
+
+              {typeFilter !== "penerimaan" && (
+                <>
+                  <td className="px-4 py-2">{formatCurrency(item.pengeluaran_rkud)}</td>
+                  <td className="px-4 py-2">{formatCurrency(item.pengeluaran_sipd)}</td>
+                  <td className="px-4 py-2 text-red-600 font-medium">
+                    {formatCurrency(item.selisih_pengeluaran)}
+                  </td>
+                </>
+              )}
+
               <td className="px-4 py-2 font-semibold text-gray-800">
                 {formatCurrency(item.saldo_rkud)}
               </td>
-              <td className="px-4 py-2">
-                {formatCurrency(item.penerimaan_sipd)}
-              </td>
-              <td className="px-4 py-2">
-                {formatCurrency(item.pengeluaran_sipd)}
-              </td>
-              <td className="px-4 py-2 text-blue-600 whitespace-nowrap">
-                {formatCurrency(item.selisih_penerimaan)}
-              </td>
-              <td className="px-4 py-2 text-red-600 whitespace-nowrap">
-                {formatCurrency(item.selisih_pengeluaran)}
-              </td>
               <td className="px-4 py-2">{item.keterangan || "-"}</td>
+
               {user?.role === "admin" && (
                 <td className="px-4 py-2 flex gap-2">
-                  {/* Tombol Edit */}
                   <button
                     onClick={() => onEdit(item)}
-                    className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer"
+                    className="p-2 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500 transition"
                     title="Edit"
                   >
                     <Pencil size={16} />
                   </button>
-
-                  {/* Tombol Delete */}
                   <button
                     onClick={() => onDelete(item)}
-                    className="p-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
-                    title="Delete"
+                    className="p-2 bg-red-400 text-white rounded-md hover:bg-red-500 transition"
+                    title="Hapus"
                   >
                     <Trash2 size={16} />
                   </button>

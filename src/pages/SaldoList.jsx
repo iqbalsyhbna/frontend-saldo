@@ -12,16 +12,14 @@ const formatDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`; // format YYYY-MM-DD
+  return `${year}-${month}-${day}`;
 };
 
 export default function SaldoList() {
   const [data, setData] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [filter, setFilter] = useState({
-    startDate: "",
-    endDate: "",
-  });
+  const [filter, setFilter] = useState({ startDate: "", endDate: "" });
+  const [typeFilter, setTypeFilter] = useState("all"); // all | penerimaan | pengeluaran
   const [editing, setEditing] = useState(null);
 
   useEffect(() => {
@@ -33,7 +31,6 @@ export default function SaldoList() {
       const res = await getAllSaldo();
       setData(res);
 
-      // === Set default filter bulan sekarang ===
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -60,8 +57,7 @@ export default function SaldoList() {
   };
 
   const applyFilter = () => {
-    let result = [...data]; // selalu ambil dari data asli
-
+    let result = [...data];
     if (filter.startDate) {
       result = result.filter(
         (item) => new Date(item.tanggal) >= new Date(filter.startDate)
@@ -72,18 +68,15 @@ export default function SaldoList() {
         (item) => new Date(item.tanggal) <= new Date(filter.endDate)
       );
     }
-
     setFiltered(result);
   };
 
   const resetFilter = () => {
     setFilter({ startDate: "", endDate: "" });
-    setFiltered(data); // kembalikan ke data asli
+    setFiltered(data);
   };
 
-  const handleEdit = (item) => {
-    setEditing(item);
-  };
+  const handleEdit = (item) => setEditing(item);
 
   const handleUpdate = async (id, updatedData) => {
     try {
@@ -102,9 +95,8 @@ export default function SaldoList() {
       !window.confirm(
         `Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`
       )
-    ) {
+    )
       return;
-    }
     try {
       await deleteSaldo(item.id);
       alert("🗑️ Data berhasil dihapus!");
@@ -124,69 +116,100 @@ export default function SaldoList() {
   };
 
   return (
-    <div className="bg-white shadow rounded-xl p-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Data Saldo</h2>
+    <div className="bg-white shadow-lg rounded-2xl p-6">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        📊 Data Saldo RKUD & SIPD
+      </h2>
 
-      {/* Filter Form */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Dari Tanggal
-          </label>
-          <input
-            type="date"
-            name="startDate"
-            value={filter.startDate}
-            onChange={handleFilterChange}
-            className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-          />
+      {/* FILTER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 font-medium mb-1">
+              Dari Tanggal
+            </label>
+            <input
+              type="date"
+              name="startDate"
+              value={filter.startDate}
+              onChange={handleFilterChange}
+              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 font-medium mb-1">
+              Sampai Tanggal
+            </label>
+            <input
+              type="date"
+              name="endDate"
+              value={filter.endDate}
+              onChange={handleFilterChange}
+              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm"
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Sampai Tanggal
-          </label>
-          <input
-            type="date"
-            name="endDate"
-            value={filter.endDate}
-            onChange={handleFilterChange}
-            className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-          />
-        </div>
-        <div className="flex items-end gap-2">
+
+        <div className="flex gap-2 w-full md:w-auto">
           <button
             onClick={applyFilter}
-            type="button"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
           >
             Terapkan
           </button>
           <button
             onClick={resetFilter}
-            type="button"
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition cursor-pointer"
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm font-medium"
           >
             Reset
           </button>
         </div>
-        <div className="flex items-end justify-end flex-grow">
+
+        {/* Segmented Buttons */}
+        <div className="flex flex-1 md:flex-none justify-between sm:justify-start sm:gap-2 bg-gray-100 rounded-lg mt-2 md:mt-0">
+          {[
+            { label: "Semua", value: "all" },
+            { label: "Penerimaan", value: "penerimaan" },
+            { label: "Pengeluaran", value: "pengeluaran" },
+          ].map((btn) => (
+            <button
+              key={btn.value}
+              onClick={() => setTypeFilter(btn.value)}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition ${
+                typeFilter === btn.value
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-full md:w-auto flex justify-end">
           <button
             onClick={handleExportPdf}
-            type="button"
-            className="bg-yellow-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition cursor-pointer"
+            className="bg-yellow-400 text-gray-800 px-4 py-2 rounded-lg hover:bg-yellow-500 transition text-sm font-medium"
           >
-            Export PDF
+            📄 Export PDF
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <SaldoTable data={filtered} onEdit={handleEdit} onDelete={handleDelete} />
+      {/* TABLE */}
+      <SaldoTable
+        data={filtered}
+        typeFilter={typeFilter}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
+      {/* MODAL EDIT */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20 z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg">
-            <h3 className="text-lg font-semibold mb-4">Edit Data Saldo</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4">✏️ Edit Data Saldo</h3>
             <SaldoForm
               initialData={editing}
               onSubmit={(formData) => handleUpdate(editing.id, formData)}
