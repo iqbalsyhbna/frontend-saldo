@@ -21,32 +21,71 @@ export default function SaldoList() {
   const [filter, setFilter] = useState({ startDate: "", endDate: "" });
   const [typeFilter, setTypeFilter] = useState("all"); // all | penerimaan | pengeluaran
   const [editing, setEditing] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Tambahkan state ini
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Fungsi untuk mengambil data tanpa mengatur ulang filter
+  const refreshData = async () => {
+    try {
+      const res = await getAllSaldo();
+      setData(res);
+      
+      // Terapkan filter yang ada tanpa mengubahnya
+      applyExistingFilter(res, filter);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Fungsi untuk menerapkan filter yang ada pada data
+  const applyExistingFilter = (dataToFilter, currentFilter) => {
+    let result = [...dataToFilter];
+    
+    if (currentFilter.startDate) {
+      result = result.filter(
+        (item) => new Date(item.tanggal) >= new Date(currentFilter.startDate)
+      );
+    }
+    if (currentFilter.endDate) {
+      result = result.filter(
+        (item) => new Date(item.tanggal) <= new Date(currentFilter.endDate)
+      );
+    }
+    
+    setFiltered(result);
+  };
 
   const fetchData = async () => {
     try {
       const res = await getAllSaldo();
       setData(res);
 
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      // Hanya atur filter default saat pertama kali loading
+      if (isInitialLoad) {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-      const start = formatDate(startOfMonth);
-      const end = formatDate(endOfMonth);
+        const start = formatDate(startOfMonth);
+        const end = formatDate(endOfMonth);
 
-      setFilter({ startDate: start, endDate: end });
+        setFilter({ startDate: start, endDate: end });
 
-      const result = res.filter(
-        (item) =>
-          new Date(item.tanggal) >= new Date(start) &&
-          new Date(item.tanggal) <= new Date(end)
-      );
+        const result = res.filter(
+          (item) =>
+            new Date(item.tanggal) >= new Date(start) &&
+            new Date(item.tanggal) <= new Date(end)
+        );
 
-      setFiltered(result);
+        setFiltered(result);
+        setIsInitialLoad(false); // Tandai bahwa initial load sudah selesai
+      } else {
+        // Jika bukan initial load, gunakan filter yang ada
+        applyExistingFilter(res, filter);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -57,23 +96,19 @@ export default function SaldoList() {
   };
 
   const applyFilter = () => {
-    let result = [...data];
-    if (filter.startDate) {
-      result = result.filter(
-        (item) => new Date(item.tanggal) >= new Date(filter.startDate)
-      );
-    }
-    if (filter.endDate) {
-      result = result.filter(
-        (item) => new Date(item.tanggal) <= new Date(filter.endDate)
-      );
-    }
-    setFiltered(result);
+    applyExistingFilter(data, filter);
   };
 
   const resetFilter = () => {
-    setFilter({ startDate: "", endDate: "" });
-    setFiltered(data);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const start = formatDate(startOfMonth);
+    const end = formatDate(endOfMonth);
+
+    setFilter({ startDate: start, endDate: end });
+    applyExistingFilter(data, { startDate: start, endDate: end });
   };
 
   const handleEdit = (item) => setEditing(item);
@@ -83,7 +118,7 @@ export default function SaldoList() {
       await updateSaldo(id, updatedData);
       alert("✅ Data berhasil diperbarui!");
       setEditing(null);
-      fetchData();
+      refreshData(); // Gunakan refreshData() bukan fetchData()
     } catch (err) {
       console.error(err);
       alert("❌ Gagal update data");
@@ -100,7 +135,7 @@ export default function SaldoList() {
     try {
       await deleteSaldo(item.id);
       alert("🗑️ Data berhasil dihapus!");
-      fetchData();
+      refreshData(); // Gunakan refreshData() bukan fetchData()
     } catch (err) {
       console.error(err);
       alert("❌ Gagal menghapus data");
