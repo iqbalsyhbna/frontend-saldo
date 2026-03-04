@@ -32,7 +32,7 @@ export default function SaldoList() {
     try {
       const res = await getAllSaldo();
       setData(res);
-      
+
       // Terapkan filter yang ada tanpa mengubahnya
       applyExistingFilter(res, filter);
     } catch (err) {
@@ -43,18 +43,18 @@ export default function SaldoList() {
   // Fungsi untuk menerapkan filter yang ada pada data
   const applyExistingFilter = (dataToFilter, currentFilter) => {
     let result = [...dataToFilter];
-    
+
     if (currentFilter.startDate) {
       result = result.filter(
-        (item) => new Date(item.tanggal) >= new Date(currentFilter.startDate)
+        (item) => new Date(item.tanggal) >= new Date(currentFilter.startDate),
       );
     }
     if (currentFilter.endDate) {
       result = result.filter(
-        (item) => new Date(item.tanggal) <= new Date(currentFilter.endDate)
+        (item) => new Date(item.tanggal) <= new Date(currentFilter.endDate),
       );
     }
-    
+
     setFiltered(result);
   };
 
@@ -77,7 +77,7 @@ export default function SaldoList() {
         const result = res.filter(
           (item) =>
             new Date(item.tanggal) >= new Date(start) &&
-            new Date(item.tanggal) <= new Date(end)
+            new Date(item.tanggal) <= new Date(end),
         );
 
         setFiltered(result);
@@ -128,7 +128,7 @@ export default function SaldoList() {
   const handleDelete = async (item) => {
     if (
       !window.confirm(
-        `Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`
+        `Yakin ingin menghapus data saldo tanggal ${item.tanggal}?`,
       )
     )
       return;
@@ -242,14 +242,29 @@ export default function SaldoList() {
 
       {/* MODAL EDIT */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
-            <h3 className="text-lg font-semibold mb-4">✏️ Edit Data Saldo</h3>
-            <SaldoForm
-              initialData={editing}
-              onSubmit={(formData) => handleUpdate(editing.id, formData)}
-              onCancel={() => setEditing(null)}
-            />
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <h3 className="text-lg font-semibold">✏️ Edit Data Saldo</h3>
+                <button
+                  onClick={() => setEditing(null)}
+                  className="text-gray-400 hover:text-red-500 text-xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Body Scrollable */}
+              <div className="p-6 overflow-y-auto">
+                <SaldoForm
+                  initialData={editing}
+                  onSubmit={(formData) => handleUpdate(editing.id, formData)}
+                  onCancel={() => setEditing(null)}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

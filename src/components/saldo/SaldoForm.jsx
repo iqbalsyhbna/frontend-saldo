@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createSaldo, getSaldoById } from "../../api/saldoApi";
+import { uploadFile } from "../../api/ocrApi";
 
 export default function SaldoForm({ initialData, onSubmit, onCancel }) {
   const [form, setForm] = useState({
@@ -12,9 +13,12 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     keterangan: "",
   });
 
+  const [file, setFile] = useState(null);
+  const [loadingOCR, setLoadingOCR] = useState(false);
+
   const getKeterangan = async (id) => {
     const res = await getSaldoById(id);
-    return res.keterangan || ""; // pastikan return string
+    return res.keterangan || "";
   };
 
   useEffect(() => {
@@ -23,10 +27,9 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
         const keterangan = await getKeterangan(initialData.id);
         setForm({
           ...initialData,
-          keterangan, // ambil dari DB, kalau kosong → ""
+          keterangan,
         });
       };
-
       fetchKeterangan();
     }
   }, [initialData]);
@@ -34,11 +37,32 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleFileChange = async (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    try {
+      setLoadingOCR(true);
+
+      const res = await uploadFile(selectedFile);
+      setForm((prev) => ({
+        ...prev,
+        penerimaan_rkud: res.total_penerimaan || "",
+        pengeluaran_rkud: res.total_pengeluaran || "",
+        saldo_rkud: res.saldo || "",
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("❌ Gagal membaca file");
+    } finally {
+      setLoadingOCR(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Bersihkan dan konversi nilai sebelum dikirim
-    const formData = {
+    const formDataClean = {
       ...form,
       penerimaan_rkud:
         form.penerimaan_rkud === "" ? 0 : parseFloat(form.penerimaan_rkud),
@@ -53,20 +77,11 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     };
 
     if (onSubmit) {
-      onSubmit(formData); // untuk edit
+      onSubmit(formDataClean);
     } else {
       try {
-        await createSaldo(formData);
+        await createSaldo(formDataClean);
         alert("✅ Data berhasil disimpan!");
-        setForm({
-          tanggal: "",
-          penerimaan_rkud: "",
-          pengeluaran_rkud: "",
-          saldo_rkud: "",
-          penerimaan_sipd: "",
-          pengeluaran_sipd: "",
-          keterangan: "",
-        });
       } catch (err) {
         console.error(err);
         alert("❌ Gagal menyimpan data");
@@ -74,92 +89,141 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     }
   };
 
-  // Definisi field dengan required yang spesifik
-  const fields = [
-    { name: "tanggal", label: "Tanggal", type: "date", required: true },
-    {
-      name: "penerimaan_rkud",
-      label: "Penerimaan RKUD",
-      type: "number",
-      required: false,
-    },
-    {
-      name: "pengeluaran_rkud",
-      label: "Pengeluaran RKUD",
-      type: "number",
-      required: false,
-    },
-    {
-      name: "saldo_rkud",
-      label: "Saldo RKUD",
-      type: "number",
-      required: false,
-    },
-    {
-      name: "penerimaan_sipd",
-      label: "Penerimaan SIPD",
-      type: "number",
-      required: false,
-    },
-    {
-      name: "pengeluaran_sipd",
-      label: "Pengeluaran SIPD",
-      type: "number",
-      required: false,
-    },
-    { name: "keterangan", label: "Keterangan", type: "text", required: false }, // TIDAK REQUIRED
-  ];
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {fields.map((field) => (
-        <div key={field.name}>
-          <label className="block text-gray-700 font-medium mb-1">
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
+    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+      {/* 🔥 Hanya 1 Judul Utama */}
+      {initialData ? (
+        <></>
+      ) : (
+        <h2 className="text-2xl font-bold text-gray-800 mb-8 border-b pb-3">
+          Input Data Saldo
+        </h2>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* ================= TANGGAL ================= */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-600 mb-2">
+            Tanggal <span className="text-red-500">*</span>
           </label>
           <input
-            type={field.type}
-            name={field.name}
-            value={form[field.name]}
+            type="date"
+            name="tanggal"
+            value={form.tanggal}
             onChange={handleChange}
-            required={field.required} // Gunakan property required dari field
-            placeholder={
-              field.name === "keterangan" ? "Opsional - bisa dikosongkan" : ""
-            }
-            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+            required
+            className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
           />
         </div>
-      ))}
 
-      {/* Tombol untuk clear keterangan */}
-      <div className="flex items-center gap-2 text-sm">
-        <button
-          type="button"
-          onClick={() => setForm({ ...form, keterangan: "" })}
-          className="text-red-500 hover:text-red-700 underline cursor-pointer"
-        >
-          Kosongkan Keterangan
-        </button>
-      </div>
+        {/* ================= RKUD ================= */}
+        <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200 space-y-5">
+          <p className="font-semibold text-gray-700">Data RKUD</p>
 
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer"
-        >
-          {initialData ? "Update" : "Simpan"}
-        </button>
-        {onCancel && (
+          {/* Upload */}
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">
+              Upload File RKUD (Optional)
+            </label>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="w-full text-sm border border-gray-300 rounded-xl px-4 py-2 bg-white cursor-pointer"
+            />
+             {loadingOCR && (
+              <p className="text-xs text-blue-600 mt-2">
+                Membaca file...
+              </p>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <input
+              type="number"
+              name="penerimaan_rkud"
+              value={form.penerimaan_rkud}
+              onChange={handleChange}
+              placeholder="Penerimaan RKUD"
+              className="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+            <input
+              type="number"
+              name="pengeluaran_rkud"
+              value={form.pengeluaran_rkud}
+              onChange={handleChange}
+              placeholder="Pengeluaran RKUD"
+              className="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+            <input
+              type="number"
+              name="saldo_rkud"
+              value={form.saldo_rkud}
+              onChange={handleChange}
+              placeholder="Saldo RKUD"
+              className="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
+
+        {/* ================= SIPD ================= */}
+        <div className="p-6 bg-gray-50 rounded-2xl border border-gray-200 space-y-5">
+          <p className="font-semibold text-gray-700">Data SIPD</p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <input
+              type="number"
+              name="penerimaan_sipd"
+              value={form.penerimaan_sipd}
+              onChange={handleChange}
+              placeholder="Penerimaan SIPD"
+              className="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+            />
+            <input
+              type="number"
+              name="pengeluaran_sipd"
+              value={form.pengeluaran_sipd}
+              onChange={handleChange}
+              placeholder="Pengeluaran SIPD"
+              className="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+            />
+          </div>
+        </div>
+
+        {/* ================= KETERANGAN ================= */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-600 mb-2">
+            Keterangan (Optional)
+          </label>
+          <input
+            type="text"
+            name="keterangan"
+            value={form.keterangan}
+            onChange={handleChange}
+            placeholder="Tambahkan catatan jika diperlukan"
+            className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </div>
+
+        {/* ================= BUTTON ================= */}
+        <div className="flex gap-4 pt-4">
           <button
-            type="button"
-            onClick={onCancel}
-            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition cursor-pointer"
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-xl transition"
           >
-            Batal
+            {initialData ? "Update" : "Simpan"}
           </button>
-        )}
-      </div>
-    </form>
+
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-xl transition"
+            >
+              Batal
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }
