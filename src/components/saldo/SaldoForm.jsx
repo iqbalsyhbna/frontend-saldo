@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { createSaldo, getSaldoById } from "../../api/saldoApi";
+import {
+  createSaldo,
+  getSaldoById,
+  registerLaporanPenerimaan,
+  registerLaporanPengeluaran,
+} from "../../api/saldoApi";
 import { uploadFile } from "../../api/ocrApi";
 
 export default function SaldoForm({ initialData, onSubmit, onCancel }) {
@@ -13,7 +18,6 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     keterangan: "",
   });
 
-  const [file, setFile] = useState(null);
   const [loadingOCR, setLoadingOCR] = useState(false);
 
   const getKeterangan = async (id) => {
@@ -21,18 +25,81 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
     return res.keterangan || "";
   };
 
+  const fetchPengeluaran = async (tanggal) => {
+    if (!tanggal) return;
+
+    try {
+      const body = {
+        jenis_dokumen: "sp2d",
+        tanggal_awal: tanggal,
+        tanggal_akhir: tanggal,
+        jenis_register: "transaksi",
+        id_skpd: 0,
+        id_penanggung_jawab: 0,
+        jenis_kriteria: "semua",
+      };
+
+      const pengeluaran = await registerLaporanPengeluaran(body);
+
+      setForm((prev) => ({
+        ...prev,
+        pengeluaran_sipd: pengeluaran.data.total_bruto || 0,
+      }));
+    } catch (err) {
+      console.error("Gagal fetch pengeluaran", err);
+    }
+  };
+
+  const fetchPenerimaan = async (tanggal) => {
+    if (!tanggal) return;
+
+    try {
+      const body = {
+        jenis_dokumen: "stbp",
+        tanggal_awal: tanggal,
+        tanggal_akhir: tanggal,
+        jenis_register: "transaksi",
+        id_skpd: 0,
+        id_akun: 0,
+      };
+
+      const penerimaan = await registerLaporanPenerimaan(body);
+
+      setForm((prev) => ({
+        ...prev,
+        penerimaan_sipd: penerimaan.data.total_nilai || 0,
+      }));
+    } catch (err) {
+      console.error("Gagal fetch penerimaan", err);
+    }
+  };
+
   useEffect(() => {
     if (initialData) {
-      const fetchKeterangan = async () => {
+      const fetchData = async () => {
         const keterangan = await getKeterangan(initialData.id);
+
         setForm({
           ...initialData,
           keterangan,
         });
+
+        // 🔥 langsung fetch berdasarkan tanggal edit
+        fetchPengeluaran(initialData.tanggal);
+        fetchPenerimaan(initialData.tanggal);
       };
-      fetchKeterangan();
+
+      fetchData();
     }
   }, [initialData]);
+
+  useEffect(() => {
+    if (!initialData && form.tanggal) {
+      // 🔥 mode create
+      fetchPengeluaran(form.tanggal);
+      fetchPenerimaan(form.tanggal);
+    }
+  }, [form.tanggal]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -130,10 +197,8 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
               onChange={handleFileChange}
               className="w-full text-sm border border-gray-300 rounded-xl px-4 py-2 bg-white cursor-pointer"
             />
-             {loadingOCR && (
-              <p className="text-xs text-blue-600 mt-2">
-                Membaca file...
-              </p>
+            {loadingOCR && (
+              <p className="text-xs text-blue-600 mt-2">Membaca file...</p>
             )}
           </div>
 
