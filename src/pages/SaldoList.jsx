@@ -151,119 +151,126 @@ export default function SaldoList() {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-6">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        📊 Data Saldo RKUD & SIPD
-      </h2>
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h2 className="text-2xl font-bold text-gray-800">
+          📊 Data Saldo RKUD & SIPD
+        </h2>
 
-      {/* FILTER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="flex flex-col">
-            <label className="text-sm text-gray-600 font-medium mb-1">
-              Dari Tanggal
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              value={filter.startDate}
-              onChange={handleFilterChange}
-              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm"
-            />
+        <button
+          onClick={handleExportPdf}
+          className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition"
+        >
+          📄 Export PDF
+        </button>
+      </div>
+
+      {/* FILTER PANEL */}
+      <div className="bg-white border rounded-xl p-5 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-end gap-6">
+          {/* DATE FILTER */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 font-semibold mb-1">
+                Dari Tanggal
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                value={filter.startDate}
+                onChange={handleFilterChange}
+                className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 font-semibold mb-1">
+                Sampai Tanggal
+              </label>
+              <input
+                type="date"
+                name="endDate"
+                value={filter.endDate}
+                onChange={handleFilterChange}
+                className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col">
-            <label className="text-sm text-gray-600 font-medium mb-1">
-              Sampai Tanggal
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              value={filter.endDate}
-              onChange={handleFilterChange}
-              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 w-full md:w-auto">
-          <button
-            onClick={applyFilter}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-          >
-            Terapkan
-          </button>
-          <button
-            onClick={resetFilter}
-            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition text-sm font-medium"
-          >
-            Reset
-          </button>
-        </div>
-
-        {/* Segmented Buttons */}
-        <div className="flex flex-1 md:flex-none justify-between sm:justify-start sm:gap-2 bg-gray-100 rounded-lg mt-2 md:mt-0">
-          {[
-            { label: "Semua", value: "all" },
-            { label: "Penerimaan", value: "penerimaan" },
-            { label: "Pengeluaran", value: "pengeluaran" },
-          ].map((btn) => (
+          {/* FILTER BUTTON */}
+          <div className="flex gap-2">
             <button
-              key={btn.value}
-              onClick={() => setTypeFilter(btn.value)}
-              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition ${
-                typeFilter === btn.value
-                  ? "bg-blue-600 text-white shadow"
-                  : "text-gray-700 hover:bg-gray-200"
-              }`}
+              onClick={applyFilter}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
             >
-              {btn.label}
+              Terapkan
             </button>
-          ))}
-        </div>
 
-        <div className="w-full md:w-auto flex justify-end">
-          <button
-            onClick={handleExportPdf}
-            className="bg-yellow-400 text-gray-800 px-4 py-2 rounded-lg hover:bg-yellow-500 transition text-sm font-medium"
-          >
-            📄 Export PDF
-          </button>
+            <button
+              onClick={resetFilter}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* TYPE FILTER */}
+          <div className="flex bg-gray-100 rounded-lg p-1 ml-auto">
+            {[
+              { label: "Semua", value: "all" },
+              { label: "Penerimaan", value: "penerimaan" },
+              { label: "Pengeluaran", value: "pengeluaran" },
+            ].map((btn) => (
+              <button
+                key={btn.value}
+                onClick={() => setTypeFilter(btn.value)}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition
+                ${
+                  typeFilter === btn.value
+                    ? "bg-white shadow text-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }
+              `}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* TABLE */}
-      <SaldoTable
-        data={filtered}
-        typeFilter={typeFilter}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <div className="bg-white border rounded-xl shadow-sm p-4">
+        <SaldoTable
+          data={filtered}
+          typeFilter={typeFilter}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      </div>
 
       {/* MODAL EDIT */}
       {editing && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b">
-                <h3 className="text-lg font-semibold">✏️ Edit Data Saldo</h3>
-                <button
-                  onClick={() => setEditing(null)}
-                  className="text-gray-400 hover:text-red-500 text-xl font-bold"
-                >
-                  ×
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h3 className="text-lg font-semibold">✏️ Edit Data Saldo</h3>
 
-              {/* Body Scrollable */}
-              <div className="p-6 overflow-y-auto">
-                <SaldoForm
-                  initialData={editing}
-                  onSubmit={(formData) => handleUpdate(editing.id, formData)}
-                  onCancel={() => setEditing(null)}
-                />
-              </div>
+              <button
+                onClick={() => setEditing(null)}
+                className="text-gray-400 hover:text-red-500 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto">
+              <SaldoForm
+                initialData={editing}
+                onSubmit={(formData) => handleUpdate(editing.id, formData)}
+                onCancel={() => setEditing(null)}
+              />
             </div>
           </div>
         </div>
