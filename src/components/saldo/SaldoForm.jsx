@@ -7,17 +7,18 @@ import {
 } from "../../api/saldoApi";
 import { uploadFile } from "../../api/ocrApi";
 
-export default function SaldoForm({ initialData, onSubmit, onCancel }) {
-  const [form, setForm] = useState({
-    tanggal: "",
-    penerimaan_rkud: "",
-    pengeluaran_rkud: "",
-    saldo_rkud: "",
-    penerimaan_sipd: "",
-    pengeluaran_sipd: "",
-    keterangan: "",
-  });
+const initialFormState = {
+  tanggal: "",
+  penerimaan_rkud: "",
+  pengeluaran_rkud: "",
+  saldo_rkud: "",
+  penerimaan_sipd: "",
+  pengeluaran_sipd: "",
+  keterangan: "",
+};
 
+export default function SaldoForm({ initialData, onSubmit, onCancel }) {
+  const [form, setForm] = useState(initialFormState);
   const [loadingOCR, setLoadingOCR] = useState(false);
 
   const getKeterangan = async (id) => {
@@ -149,6 +150,8 @@ export default function SaldoForm({ initialData, onSubmit, onCancel }) {
       try {
         await createSaldo(formDataClean);
         alert("✅ Data berhasil disimpan!");
+
+        setForm(initialFormState);
       } catch (err) {
         console.error(err);
         alert("❌ Gagal menyimpan data");
